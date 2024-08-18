@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  /* Untuk WebKit Browsers (Chrome, Safari) */
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none; /* Menyembunyikan scrollbar */
+  }
+
+  /* Untuk Firefox */
+  .scrollbar-hidden {
+    scrollbar-width: none; /* Menyembunyikan scrollbar */
+  }
+
+  /* Untuk Internet Explorer dan Microsoft Edge */
+  .scrollbar-hidden {
+    -ms-overflow-style: none; /* Menyembunyikan scrollbar */
+  }
+}
