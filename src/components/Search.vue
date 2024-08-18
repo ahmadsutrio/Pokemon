@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 
+let search = ref('')
 const typeIcons = {
     flying: "fa-dove",
     normal: "fa-paw",
@@ -63,9 +64,9 @@ const typeColors = {
             <div class="search flex gap-2 md:h-12 md:mt-0 mt-2">
                 <input type="search" name="" id=""
                     class="w-full py-2 px-4 rounded-xl outline-none bg-transparent border border-blue-500 text-white focus:ring-blue-500 focus:ring-4 focus:ring-opacity-40"
-                    placeholder="search">
+                    placeholder="search" @input="$emit('keyword', search)" v-model="search">
                 <button type="button"
-                    class="py-2 px-3 bg-blue-500 rounded-xl text-white focus:ring-blue-500 focus:ring-4 focus:ring-opacity-40">Search</button>
+                    class="py-2 px-3 bg-blue-500 rounded-xl text-white focus:ring-blue-500 focus:ring-4 focus:ring-opacity-40">search</button>
             </div>
         </div>
     </section>

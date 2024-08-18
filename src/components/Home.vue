@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, watch,ref } from "vue";
 
+// variable
+const tempSearch = defineProps(['keyword'])
 const pokemons = reactive([])
 const pokemonDetails = reactive([])
-
-// icons
+const search = ref('')
 const typeIcons = {
     flying: "fa-dove",
     normal: "fa-paw",
@@ -27,7 +28,6 @@ const typeIcons = {
     stellar: "fa-star",
     unknown: "fa-question"
 };
-
 const typeColors = {
     fire: 'bg-red-500',
     water: 'bg-blue-500',
@@ -50,7 +50,6 @@ const typeColors = {
     unknown: 'bg-gray-200',
     stellar: 'bg-purple-900',
 }
-
 
 // Function
 async function getPokemons() {
@@ -77,6 +76,8 @@ async function getPokemons() {
     }
 }
 
+
+
 async function getPokemon(name) {
     const url = `https://pokeapi.co/api/v2/pokemon/${name}`
     const response = await fetch(url)
@@ -84,6 +85,16 @@ async function getPokemon(name) {
 
     return data
 }
+
+// watch
+watch(() => tempSearch.keyword, async () => {
+    console.log(tempSearch.keyword);
+    
+    let pokemon = await getPokemon(tempSearch.keyword)
+
+    
+    
+})
 
 // mounted
 onMounted(() => {

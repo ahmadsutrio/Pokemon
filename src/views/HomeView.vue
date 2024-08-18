@@ -1,14 +1,21 @@
 <script setup>
+import { ref, watch } from 'vue';
 import Home from '../components/Home.vue'
 import Search from '@/components/Search.vue';
+
+defineEmits(['keyword'])
+let search = ref('')
+
+const keyword = (value) => {
+  search.value = value
+}
+
 </script>
 
 <template>
   <div>
-    <component :is="Search"/>
-    <KeepAlive include="Home">
-      <component :is="Home" />
-    </KeepAlive>
+    <Search @keyword="keyword"></Search>
+    <Home :keyword="search"></Home>
   </div>
 </template>
 
