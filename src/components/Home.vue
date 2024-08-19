@@ -1,11 +1,13 @@
 <script setup>
-import { onMounted, reactive, watch,ref } from "vue";
+import { onMounted, reactive, watch, ref, computed } from "vue";
 
 // variable
 const tempSearch = defineProps(['keyword'])
 const pokemons = reactive([])
 const pokemonDetails = reactive([])
+let resultPokemon = reactive([])
 const search = ref('')
+let searchPokemon = ref(false)
 const typeIcons = {
     flying: "fa-dove",
     normal: "fa-paw",
@@ -53,13 +55,14 @@ const typeColors = {
 
 // Function
 async function getPokemons() {
-    const url = "https://pokeapi.co/api/v2/pokemon?limit=50"
+    const url = "https://pokeapi.co/api/v2/pokemon?limit=150"
     try {
         const response = await fetch(url)
         console.log('melakukan fetch');
 
-        if (!response) {
+        if (!response.ok) {
             console.log(`response status ${response.status}`);
+            return;
         }
 
         let json = await response.json()
@@ -76,25 +79,65 @@ async function getPokemons() {
     }
 }
 
-
-
 async function getPokemon(name) {
     const url = `https://pokeapi.co/api/v2/pokemon/${name}`
-    const response = await fetch(url)
-    const data = await response.json()
+    try {
+        const response = await fetch(url)
+        if (!response.ok) {
+            return null
+        }
+        const data = await response.json()
 
-    return data
+        return data
+
+    } catch (error) {
+        console.log(error.message);
+        return null
+    }
 }
+
+const searchPokemons = async () => {
+    let getResultPokemon = await getPokemon(search.value)
+    if(getResultPokemon !== null){
+        resultPokemon=reactive([getResultPokemon])
+        console.log(resultPokemon);
+    }
+    
+    
+}
+
+// Computed property untuk menyaring Pokemon berdasarkan pencarian
+const filteredPokemon = computed(() => {
+    if (search.value === '') { 
+        console.log(search.value);
+        return pokemonDetails;
+    }
+    if (search.value !== '') {
+        searchPokemons()
+        searchPokemon.value = true
+    } else {
+        searchPokemon.value = false
+    }
+
+
+    return pokemonDetails.filter(pokemon =>
+        pokemon.name.toLowerCase().includes(search.value.toLowerCase())
+    );
+});
 
 // watch
 watch(() => tempSearch.keyword, async () => {
-    console.log(tempSearch.keyword);
-    
-    let pokemon = await getPokemon(tempSearch.keyword)
+    search.value = tempSearch.keyword
 
-    
-    
+    if(search.value !== '') {
+        searchPokemons()
+        searchPokemon.value = true 
+    }else{
+        searchPokemon.value = false
+    }
+
 })
+
 
 // mounted
 onMounted(() => {
@@ -105,11 +148,36 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="bg-slate-800">
+    <div class="bg-slate-800 min-w-full min-h-screen">
         <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-3 lg:px-5 bg-slate-800">
             <div class="grid lg:grid-cols-4 sm:grid-cols-2 md:grid-cols-3 grid-cols-1 gap-6 md:gap-3">
+
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
-                    v-for="pokemon in pokemonDetails">
+                    v-if="searchPokemon === true" v-for="pokemon in resultPokemon">
+                    <img :src="pokemon.sprites.other.dream_world.front_default" alt="" srcset=""
+                        class="size-44 w-full z-20">
+                    <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
+                        {{ pokemon.name }}</h3>
+                    <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
+                        <div :class="`flex gap-2 px-3 py-1 rounded-lg justify-center items-center  ${typeColors[type.type.name] || 'bg-[#A98FF3]'} z-20`"
+                            v-for="type in pokemon.types">
+                            <span class="" v-if="`typeIcons.${type.type.name}`">
+                                <i :class="`fa-solid text-sm text-white ${typeIcons[type.type.name]}`"></i>
+                            </span>
+                            <p class="text-white text-base font-semibold uppercase"> {{ type.type.name }}</p>
+                        </div>
+                    </div>
+                    <div class="flex w-full gap-5 font-bold text-slate-100 text-2xl mb-5 justify-center">
+                        <h3 class=" z-20">{{ `${pokemon.height} KG` }}</h3>
+                        <h3 class=" z-20">{{ `${pokemon.weight} M` }}</h3>
+                    </div>
+                    <div
+                        :class="`absolute -bottom-28 right-0 z- left-0 size-72 mx-auto rounded-full ${typeColors[pokemon.types[0].type.name]} blur-[80px]`">
+                    </div>
+                </div>
+
+                <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
+                    v-if="searchPokemon===false" v-for="pokemon in filteredPokemon">
                     <img :src="pokemon.sprites.other.dream_world.front_default" alt="" srcset=""
                         class="size-44 w-full z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
