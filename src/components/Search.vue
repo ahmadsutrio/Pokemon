@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 
 let search = ref('')
+
 const typeIcons = {
     flying: "fa-dove",
     normal: "fa-paw",
@@ -35,7 +36,7 @@ const typeColors = {
     'fa-skull-crossbones': 'bg-purple-500',
     'fa-mountain': 'bg-yellow-800',
     'fa-dove': 'bg-blue-400',
-'fa-brain': 'bg-pink-500',
+    'fa-brain': 'bg-pink-500',
     'fa-bug': 'bg-green-600',
     'fa-gem': 'bg-gray-700',
     'fa-ghost': 'bg-purple-700',
@@ -48,28 +49,14 @@ const typeColors = {
     'fa-star': 'bg-purple-900',
 }
 
+
+const searchPokeomn = ()=>{
+    return search.value
+}
 </script>
 
 <template>
-    <section class="bg-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-3 lg:px-5 py-5 md:h-16 content-center bg-slate-800 grid md:grid-cols-2 grid-cols-1 md:gap-5">
-            <div
-                class="menu flex items-center gap-2 p-2 border overflow-x-scroll rounded-lg border-slate-400 scrollbar-hidden snap-x">
-                <div :class="`size-8 rounded-full ${typeColors[element]} flex justify-center items-center flex-shrink-0 scroll-ml-14 snap-start`"
-                    v-for="element in typeIcons">
-                    <i :class="`fa-solid text-xl text-white ${element}`"></i>
-
-                </div>
-            </div>
-            <div class="search flex gap-2 md:h-12 md:mt-0 mt-2">
-                <input type="search" name="" id=""
-                    class="w-full py-2 px-4 rounded-xl outline-none bg-transparent border border-blue-500 text-white focus:ring-blue-500 focus:ring-4 focus:ring-opacity-40"
-                    placeholder="search" @input="$emit('keyword', search)" v-model="search">
-                <button type="button"
-                    class="py-2 px-3 bg-blue-500 rounded-xl text-white focus:ring-blue-500 focus:ring-4 focus:ring-opacity-40">search</button>
-            </div>
-        </div>
-    </section>
+   
 </template>
 
 <style></style>
