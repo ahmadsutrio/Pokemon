@@ -8,29 +8,28 @@ const pokemonDetails = reactive([])
 let resultPokemon = ref([])
 const search = ref('')
 let searchPokemon = ref(false)
-
-const typeIcons = {
-    flying: "fa-dove",
-    normal: "fa-paw",
-    fighting: "fa-fist-raised",
-    poison: "fa-skull-crossbones",
-    ground: "fa-mountain",
-    rock: "fa-gem",
-    bug: "fa-bug",
-    ghost: "fa-ghost",
-    steel: "fa-cogs",
-    fire: "fa-fire",
-    water: "fa-water",
-    grass: "fa-leaf",
-    electric: "fa-bolt",
-    psychic: "fa-brain",
-    ice: "fa-snowflake",
-    dragon: "fa-dragon",
-    dark: "fa-moon",
-    fairy: "fa-magic",
-    stellar: "fa-star",
-    unknown: "fa-question"
-};
+const typeIcons = [
+     "fa-fire",
+     "fa-water",
+     "fa-leaf",
+     "fa-bolt",
+     "fa-snowflake",
+     "fa-fist-raised",
+     "fa-skull-crossbones",
+     "fa-mountain",
+     "fa-dove",
+     "fa-brain",
+     "fa-bug",
+     "fa-gem",
+     "fa-ghost",
+     "fa-dragon",
+     "fa-moon",
+     "fa-cogs",
+     "fa-magic",
+     "fa-paw",
+     "fa-question",
+     "fa-star",
+];
 
 const typeColors = {
     fire: 'bg-red-500',
@@ -53,34 +52,63 @@ const typeColors = {
     normal: 'bg-gray-400',
     unknown: 'bg-gray-200',
     stellar: 'bg-purple-900',
-}
+};
 
-const elementColors = {
-    'fa-fire': 'bg-red-500',
-    'fa-water': 'bg-blue-500',
-    'fa-leaf': 'bg-green-500',
-    'fa-bolt': 'bg-yellow-500',
-    'fa-snowflake': 'bg-blue-300',
-    'fa-fist-raised': 'bg-red-700',
-    'fa-skull-crossbones': 'bg-purple-500',
-    'fa-mountain': 'bg-yellow-800',
-    'fa-dove': 'bg-blue-400',
-    'fa-brain': 'bg-pink-500',
-    'fa-bug': 'bg-green-600',
-    'fa-gem': 'bg-gray-700',
-    'fa-ghost': 'bg-purple-700',
-    'fa-dragon': 'bg-indigo-600',
-    'fa-moon': 'bg-gray-900',
-    'fa-cogs': 'bg-gray-500',
-    'fa-magic': 'bg-pink-300',
-    'fa-paw': 'bg-gray-400',
-    'fa-question': 'bg-gray-200',
-    'fa-star': 'bg-purple-900',
+const colors = [
+    'bg-red-500',
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-yellow-500',
+    'bg-blue-300',
+    'bg-red-700',
+    'bg-purple-500',
+    'bg-yellow-800',
+    'bg-blue-400',
+    'bg-pink-500',
+    'bg-green-600',
+    'bg-gray-700',
+    'bg-purple-700',
+    'bg-indigo-600',
+    'bg-gray-900',
+    'bg-gray-500',
+    'bg-pink-300',
+    'bg-gray-400',
+    'bg-gray-200',
+    'bg-purple-900',
+];
+
+const elementColors = [
+    "fire",
+    "water",
+    "grass",
+    "electric",
+    "ice",
+    "fighting",
+    "poison",
+    "ground",
+    "flying",
+    "psychic",
+    "bug",
+    "rock",
+    "ghost",
+    "dragon",
+    "dark",
+    "steel",
+    "fairy",
+    "normal",
+    "unknown",
+    "stellar",
+];
+
+function getColors(typeElements = ""){
+    let cekElement = elementColors.includes(typeElements)
+    console.log(cekElement);
+    
 }
 
 // Function
 async function getPokemons() {
-    let countPokemons = 10
+    let countPokemons = 12
     let nilai = pokemons.length + 1
     // console.log(`count pokemons ${countPokemons} nilai ${nilai}`);
     
@@ -99,6 +127,8 @@ async function getPokemons() {
             const pokemon = await getPokemon(pokemons[i].name)
             pokemonDetails.push(pokemon)
         }
+        console.log(pokemonDetails);
+        
 
     } catch (error) {
         console.error(error.message);
@@ -124,6 +154,8 @@ async function getPokemon(name) {
 
 const getPokemonWithElement = async (element = "") =>{
     const url = `https://pokeapi.co/api/v2/type/${element}`
+    console.log(url);
+    
     try {
         const response = await fetch(url);
         if(response.status != 200){
@@ -138,14 +170,8 @@ const getPokemonWithElement = async (element = "") =>{
         for(let i = 0; i<10; i++){
             const pokemon = await getPokemon(tempData[i].pokemon.name)
             console.log(pokemonDetails);
-            pokemonDetails.push(pokemon)
-
-            // console.log(pokemonDetails);
-            
-            
+            pokemonDetails.push(pokemon)   
         }
-        // console.log("jao");
-        // console.log(tempData);
     } catch (error) {
         
     }
@@ -203,9 +229,9 @@ onMounted(() => {
                 class=" sm:px-6 md:px-3 lg:px-5 py-5 md:h-16 content-center bg-slate-800 grid md:grid-cols-2 grid-cols-1 md:gap-5">
                 <div
                     class="menu flex items-center gap-2 p-2 border overflow-x-scroll rounded-lg border-slate-400 scrollbar-hidden snap-x">
-                    <div :class="`size-8 rounded-full ${elementColors[element]} flex justify-center items-center flex-shrink-0 scroll-ml-14 snap-start`"
-                        v-for="element in typeIcons">
-                        <i :class="`fa-solid text-xl text-white ${element}`"></i>
+                    <div :class="`size-8 rounded-full ${colors[index]} flex justify-center items-center flex-shrink-0 scroll-ml-14 snap-start`" @click="getPokemonWithElement(elementColors[index])"
+                        v-for="(icon, index) in typeIcons " :key="index">
+                        <i :class="`fa-solid text-xl text-white ${icon}`"></i>
 
                     </div>
                 </div>
@@ -220,8 +246,8 @@ onMounted(() => {
             </div>
             <div class="grid lg:grid-cols-4 sm:grid-cols-2 md:grid-cols-3 grid-cols-1 gap-6 md:gap-3">
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
-                    v-if="searchPokemon === true" v-for="pokemon in tempResult">
-                    <img :src="pokemon.sprites.other.dream_world.front_default" alt="" :loading="lazy" srcset=""
+                    v-if="searchPokemon" v-for="pokemon in tempResult">
+                    <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" :loading="lazy" srcset=""
                         class="size-44 w-full z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
@@ -244,8 +270,8 @@ onMounted(() => {
                 </div>
 
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
-                    v-if="searchPokemon === false" v-for="pokemon in filteredPokemon" :key="pokemon.id">
-                    <img :src="pokemon.sprites.other.dream_world.front_default" alt="" srcset="" class="size-44 w-full z-20">
+                    v-if="!searchPokemon" v-for="pokemon in filteredPokemon" :key="pokemon.id">
+                    <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" srcset="" class="size-44 w-full z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
                     <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
