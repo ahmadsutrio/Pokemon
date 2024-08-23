@@ -100,35 +100,24 @@ const elementColors = [
     "stellar",
 ];
 
-function getColors(typeElements = "") {
-    let cekElement = elementColors.includes(typeElements)
-    console.log(cekElement);
-
-}
+// function getColors(typeElements = "") {
+//     let cekElement = elementColors.includes(typeElements)
+// }
 
 // Function
 async function getPokemons() {
     let countPokemons = 12
     let nilai = pokemons.length + 1
-    // console.log(`count pokemons ${countPokemons} nilai ${nilai}`);
-
     const url = `https://pokeapi.co/api/v2/pokemon?offset=${nilai}&limit=${countPokemons}`
     try {
         const response = await fetch(url)
-        if (!response.ok) {
-            return console.error('gagal fetching');
-        }
-
         let json = await response.json()
-
-        pokemons.push(...json.results)
-
-        for (let i = 0; i < pokemons.length; i++) {
-            const pokemon = await getPokemon(pokemons[i].name)
-            pokemonDetails.push(pokemon)
-        }
-        console.log(pokemonDetails);
-
+        json.results.map((item) => {
+            pokemons.push(item.name)
+            const pokemon = getPokemon(item.name).then((data) => {
+                pokemonDetails.push(data)
+            })
+        });
 
     } catch (error) {
         console.error(error.message);
@@ -140,22 +129,16 @@ async function getPokemon(name) {
     const url = `https://pokeapi.co/api/v2/pokemon/${lowerName}`
     try {
         const response = await fetch(url)
-        if (!response.ok) {
-            return null
-        }
         const data = await response.json()
         return data
-
     } catch (error) {
-        console.log(error.message);
-        return null
+        return () => console.error(error.message);
     }
 }
 
 const getPokemonWithElement = async (element = "") => {
     const url = `https://pokeapi.co/api/v2/type/${element}`
     console.log(url);
-
     try {
         const response = await fetch(url);
         if (response.status != 200) {
@@ -191,8 +174,6 @@ const filteredPokemon = computed(() => {
     const uniquePokemons = [];
     const map = new Map();
 
-
-
     for (const pokemon of pokemonDetails) {
         if (!map.has(pokemon.name)) {
             map.set(pokemon.name, true);
@@ -215,7 +196,6 @@ watch(() => search.value, async () => {
 // mounted
 onMounted(() => {
     getPokemons()
-    // getPokemonWithElement("fire")
 })
 
 
@@ -248,12 +228,12 @@ onMounted(() => {
             <div class="grid lg:grid-cols-4 sm:grid-cols-2 md:grid-cols-3 grid-cols-1 gap-6 md:gap-3">
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
                     v-if="searchPokemon" v-for="pokemon in tempResult">
-                    <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" :loading="lazy" srcset=""
+                    <img :src="pokemon.sprites.other.dream_world.front_default" alt="" :loading="lazy" srcset=""
                         class="size-44 w-full z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
                     <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
-                        <div :class="`flex gap-2 px-3 py-1 rounded-lg justify-center items-center  ${typeColors[type.type.name] || 'bg-[#A98FF3]'} z-20`"
+                        <div :class="`flex px-3 py-1 rounded-lg justify-center items-center  ${typeColors[{ type }.name] || 'bg-[#A98FF3]'} z-20`"
                             v-for="type in pokemon.types">
                             <span class="" v-if="`typeIcons.${type.type.name}`">
                                 <i :class="`fa-solid text-sm text-white ${typeIcons[type.type.name]}`"></i>
@@ -272,12 +252,12 @@ onMounted(() => {
 
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
                     v-if="!searchPokemon" v-for="pokemon in filteredPokemon" :key="pokemon.id">
-                    <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" srcset=""
+                    <img :src="pokemon.sprites.other.dream_world.front_default" alt="" srcset=""
                         class="size-44 w-full z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
                     <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
-                        <div :class="`flex gap-2 px-3 py-1 rounded-lg justify-center items-center  ${typeColors[type.type.name] || 'bg-[#A98FF3]'} z-20`"
+                        <div :class="`flex  px-3 py-1 rounded-lg justify-center items-center  ${typeColors[type.type.name] || 'bg-[#A98FF3]'} z-20`"
                             v-for="type in pokemon.types">
                             <span class="" v-if="`typeIcons.${type.type.name}`">
                                 <i :class="`fa-solid text-sm text-white ${typeIcons[type.type.name]}`"></i>
