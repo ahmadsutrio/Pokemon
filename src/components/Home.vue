@@ -282,7 +282,8 @@ onMounted(() => {getPokemons()})
                 </div>
 
                 <div class="card bg-[#0e0e0e] animate__animated animate__zoomIn relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
-                    v-if="!searchPokemon" v-for="(pokemon, index) in filteredPokemon" :key="pokemon.id" :style="{ animationDelay: (index % 12) * 0.1 + 's' }">
+                    v-if="!searchPokemon" v-for="(pokemon, index) in filteredPokemon" :key="pokemon.id"
+                    :style="{ animationDelay: (index % 12) * 0.1 + 's' }">
                     <img :src="pokemon.sprites.other['official-artwork'].front_default"
                         v-if="pokemon.sprites.other.dream_world.front_default !== null" alt="" srcset=""
                         class="size-44 z-20">
@@ -300,8 +301,8 @@ onMounted(() => {getPokemons()})
                         </div>
                     </div>
                     <div class="flex w-full gap-5 font-bold text-slate-100 text-2xl mb-5 justify-center">
-                        <h3 class=" z-20">{{ `${pokemon.height} KG` }}</h3>
-                        <h3 class=" z-20">{{ `${pokemon.weight} M` }}</h3>
+                        <h3 class="z-20">{{ `${pokemon.height} M` }}</h3>
+                        <h3 class="z-20">{{ `${pokemon.weight} KG` }}</h3>
                     </div>
                     <div
                         :class="`absolute -bottom-28 right-0 z- left-0 size-72 mx-auto rounded-full ${typeColors[pokemon.types[0].type.name]} blur-[80px]`">
@@ -313,7 +314,7 @@ onMounted(() => {getPokemons()})
             class=" absolute bottom-0 left-0 flex justify-center items-center right-0 bg-gradient-to-t from-gray-900 h-52 z-40 ">
             <button @click="getPokemons"
                 class="paginate outline-none border-2 border-cyan-300 text-cyan-300 py-3 px-6 rounded-full ">
-                Tampilkan Lainya 
+                Tampilkan Lainya
             </button>
         </div>
     </div>
