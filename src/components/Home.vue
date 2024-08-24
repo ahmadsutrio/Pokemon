@@ -3,9 +3,10 @@ import { onMounted, reactive, watch, ref, computed } from "vue";
 
 // variable
 const curentElement = ref('')
+const search = ref('')
+const resultPokemonWithElement = ref(false)
 const pokemonDetails = reactive([])
 let resultPokemon = ref([])
-const search = ref('')
 let searchPokemon = ref(false)
 
 const typeIcons = [
@@ -145,7 +146,7 @@ async function fetchPokemon(name) {
         return data
 
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         return null
     }
 }
@@ -156,9 +157,7 @@ const getPokemonWithElement = async (element = "") => {
     curentElement.value = element
     
     if(curentElement.value==="home"){
-        console.log(curentElement.value);
-        console.log(pokemonDetails);
-        
+        resultPokemonWithElement.value = false 
         pokemonDetails.splice(0, pokemonDetails.length)
         return await getPokemons();
         
@@ -169,14 +168,16 @@ const getPokemonWithElement = async (element = "") => {
 
         if (response.status != 200) throw new Error('Gagal fetching data');
         const data = await response.json()
-        const tempResult = data.pokemon
-        
+        const tempResultPokemonWithElements = data.pokemon
+        resultPokemonWithElement.value = true 
+
         pokemonDetails.splice(0, pokemonDetails.length)
         const maxConcurrentRequests = 5;
         let promises = [];
 
-        for (const data in tempResult) {
-            promises.push(fetchPokemon(tempResult[data].pokemon.name).then((pokemon) => {
+        
+        for (const data in tempResultPokemonWithElements) {
+            promises.push(fetchPokemon(tempResultPokemonWithElements[data].pokemon.name).then((pokemon) => {
                 for(let i= 0; i < pokemon.types.length; i++) {
                     if(pokemon.types[i].type.name === curentElement.value) pokemonDetails.push(pokemon);
                 }
@@ -186,6 +187,7 @@ const getPokemonWithElement = async (element = "") => {
                 promises = []; 
             }
         }
+      
         if (promises.length > 0) await Promise.all(promises);
 
     } catch (error) {
@@ -225,7 +227,7 @@ watch(() => search.value, async () => {
 })
 
 // mounted
-onMounted(() => getPokemons())
+onMounted(() => {getPokemons()})
 
 
 </script>
@@ -258,7 +260,7 @@ onMounted(() => getPokemons())
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
                     v-if="searchPokemon" v-for="pokemon in tempResult">
                     <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" :loading="lazy" srcset=""
-                        class="size-44 w-full z-20">
+                        class="size-44  z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
                     <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
@@ -279,8 +281,8 @@ onMounted(() => getPokemons())
                     </div>
                 </div>
 
-                <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
-                    v-if="!searchPokemon" v-for="pokemon in filteredPokemon" :key="pokemon.id">
+                <div class="card bg-[#0e0e0e] animate__animated animate__zoomIn relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
+                    v-if="!searchPokemon" v-for="(pokemon, index) in filteredPokemon" :key="pokemon.id" :style="{ animationDelay: (index % 12) * 0.1 + 's' }">
                     <img :src="pokemon.sprites.other['official-artwork'].front_default"
                         v-if="pokemon.sprites.other.dream_world.front_default !== null" alt="" srcset=""
                         class="size-44 z-20">
@@ -307,11 +309,11 @@ onMounted(() => getPokemons())
                 </div>
             </div>
         </section>
-        <div v-show="filteredPokemon.length < pokemonDetails.length"
+        <div v-show="filteredPokemon.length < 1032 && !resultPokemonWithElement  "
             class=" absolute bottom-0 left-0 flex justify-center items-center right-0 bg-gradient-to-t from-gray-900 h-52 z-40 ">
             <button @click="getPokemons"
                 class="paginate outline-none border-2 border-cyan-300 text-cyan-300 py-3 px-6 rounded-full ">
-                Tampilkan Lainya
+                Tampilkan Lainya 
             </button>
         </div>
     </div>

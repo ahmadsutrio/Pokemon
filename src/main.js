@@ -1,4 +1,7 @@
 import './assets/css/app.css'
+import 'animate.css';
+import 'aos/dist/aos.css';
+import 'aos/dist/aos.js'
 
 import { createApp } from 'vue'
 import App from './App.vue'
