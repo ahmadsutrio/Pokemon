@@ -109,8 +109,7 @@ function getColors(typeElements = "") {
 // Function
 async function getPokemons() {
     let countPokemons = 12
-    let nilai = pokemons.length + 1
-    // console.log(`count pokemons ${countPokemons} nilai ${nilai}`);
+    let nilai = pokemonDetails.length + 1
 
     const url = `https://pokeapi.co/api/v2/pokemon?offset=${nilai}&limit=${countPokemons}`
     try {
@@ -119,16 +118,22 @@ async function getPokemons() {
             return console.error('gagal fetching');
         }
 
-        let json = await response.json()
-
-        pokemons.push(...json.results)
-
-        for (let i = 0; i < pokemons.length; i++) {
-            const pokemon = await getPokemon(pokemons[i].name)
-            pokemonDetails.push(pokemon)
+        let dataJson = await response.json()
+        const maxConcurrentRequests = 5;
+        let promises = [];
+        for (const data in dataJson.results) {
+            // const pokemon = await getPokemon(dataJson.results[data].name)
+            promises.push(getPokemon(dataJson.results[data].name).then((pokemon) => {
+                pokemonDetails.push(pokemon);
+            }));
+            if (promises.length === maxConcurrentRequests) {
+                await Promise.all(promises);
+                promises = []; // Reset array untuk request berikutnya
+            }
         }
-        console.log(pokemonDetails);
-
+        if (promises.length > 0) {
+            await Promise.all(promises);
+        }
 
     } catch (error) {
         console.error(error.message);
@@ -154,23 +159,31 @@ async function getPokemon(name) {
 
 const getPokemonWithElement = async (element = "") => {
     const url = `https://pokeapi.co/api/v2/type/${element}`
-    console.log(url);
+    // console.log(url);
 
     try {
         const response = await fetch(url);
+
         if (response.status != 200) {
-            console.error('gagal');
+            throw new Error('Gagal fetching data');
         }
         const data = await response.json()
-        const tempData = data.pokemon
+        const tempResult = data.pokemon
+        pokemonDetails.splice(0, pokemonDetails.length)
+        const maxConcurrentRequests = 5;
+        let promises = [];
 
-        console.log(pokemonDetails.splice(0, pokemonDetails.length));
-
-        console.log(pokemonDetails);
-        for (let i = 0; i < 10; i++) {
-            const pokemon = await getPokemon(tempData[i].pokemon.name)
-            console.log(pokemonDetails);
-            pokemonDetails.push(pokemon)
+        for (const data in tempResult) {
+            promises.push(getPokemon(tempResult[data].pokemon.name).then((pokemon) => {
+                pokemonDetails.push(pokemon);
+            }));
+            if (promises.length === maxConcurrentRequests) {
+                await Promise.all(promises);
+                promises = []; // Reset array untuk request berikutnya
+            }
+        }
+        if (promises.length > 0) {
+            await Promise.all(promises);
         }
     } catch (error) {
 
@@ -190,9 +203,6 @@ const tempResult = computed(() => resultPokemon.value)
 const filteredPokemon = computed(() => {
     const uniquePokemons = [];
     const map = new Map();
-
-
-
     for (const pokemon of pokemonDetails) {
         if (!map.has(pokemon.name)) {
             map.set(pokemon.name, true);
@@ -215,7 +225,6 @@ watch(() => search.value, async () => {
 // mounted
 onMounted(() => {
     getPokemons()
-    // getPokemonWithElement("fire")
 })
 
 
@@ -272,8 +281,11 @@ onMounted(() => {
 
                 <div class="card bg-[#0e0e0e] relative overflow-hidden rounded-xl flex flex-col px-5 items-center text-center py-3 sm:mx-0 "
                     v-if="!searchPokemon" v-for="pokemon in filteredPokemon" :key="pokemon.id">
-                    <img :src="pokemon.sprites.other['official-artwork'].front_default" alt="" srcset=""
-                        class="size-44 w-full z-20">
+                    <img :src="pokemon.sprites.other['official-artwork'].front_default"
+                        v-if="pokemon.sprites.other.dream_world.front_default !== null" alt="" srcset=""
+                        class="size-44 z-20">
+                    <img :src="pokemon.sprites.other['official-artwork'].front_default" v-else :alt="pokemon.name"
+                        srcset="" class="size-44 z-20">
                     <h3 class=" z-20 text-3xl font-semibold text-slate-100 tracking-wider mt-3 capitalize">
                         {{ pokemon.name }}</h3>
                     <div class="flex md:gap-2 gap-3 justify-center w-full my-3">
