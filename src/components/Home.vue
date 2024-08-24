@@ -2,13 +2,14 @@
 import { onMounted, reactive, watch, ref, computed } from "vue";
 
 // variable
-const tempSearch = defineProps(['keyword'])
-const pokemons = reactive([])
+const curentElement = ref('')
 const pokemonDetails = reactive([])
 let resultPokemon = ref([])
 const search = ref('')
 let searchPokemon = ref(false)
+
 const typeIcons = [
+    "fa-home",
     "fa-fire",
     "fa-water",
     "fa-leaf",
@@ -32,6 +33,7 @@ const typeIcons = [
 ];
 
 const typeColors = {
+    home: 'bg-teal-500',
     fire: 'bg-red-500',
     water: 'bg-blue-500',
     grass: 'bg-green-500',
@@ -55,6 +57,7 @@ const typeColors = {
 };
 
 const colors = [
+    'bg-teal-500',
     'bg-red-500',
     'bg-blue-500',
     'bg-green-500',
@@ -78,6 +81,7 @@ const colors = [
 ];
 
 const elementColors = [
+    "home",
     "fire",
     "water",
     "grass",
@@ -100,47 +104,36 @@ const elementColors = [
     "stellar",
 ];
 
-function getColors(typeElements = "") {
-    let cekElement = elementColors.includes(typeElements)
-    console.log(cekElement);
-
-}
-
 // Function
 async function getPokemons() {
-    let countPokemons = 12
-    let nilai = pokemonDetails.length + 1
+    let limit = 12
+    let offset = pokemonDetails.length 
 
-    const url = `https://pokeapi.co/api/v2/pokemon?offset=${nilai}&limit=${countPokemons}`
+    const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
     try {
-        const response = await fetch(url)
-        if (!response.ok) {
-            return console.error('gagal fetching');
-        }
+        const response = await fetch(url);
+        if (!response.ok) return console.error('gagal fetching');
 
         let dataJson = await response.json()
+
         const maxConcurrentRequests = 5;
         let promises = [];
+
         for (const data in dataJson.results) {
-            // const pokemon = await getPokemon(dataJson.results[data].name)
-            promises.push(getPokemon(dataJson.results[data].name).then((pokemon) => {
-                pokemonDetails.push(pokemon);
-            }));
+            promises.push(fetchPokemon(dataJson.results[data].name).then((pokemon) => pokemonDetails.push(pokemon)));
             if (promises.length === maxConcurrentRequests) {
                 await Promise.all(promises);
-                promises = []; // Reset array untuk request berikutnya
+                promises = [];
             }
         }
-        if (promises.length > 0) {
-            await Promise.all(promises);
-        }
+        if (promises.length > 0) await Promise.all(promises);
 
     } catch (error) {
         console.error(error.message);
     }
 }
 
-async function getPokemon(name) {
+async function fetchPokemon(name) {
     let lowerName = name.toLowerCase()
     const url = `https://pokeapi.co/api/v2/pokemon/${lowerName}`
     try {
@@ -159,40 +152,50 @@ async function getPokemon(name) {
 
 const getPokemonWithElement = async (element = "") => {
     const url = `https://pokeapi.co/api/v2/type/${element}`
-    // console.log(url);
 
+    curentElement.value = element
+    
+    if(curentElement.value==="home"){
+        console.log(curentElement.value);
+        console.log(pokemonDetails);
+        
+        pokemonDetails.splice(0, pokemonDetails.length)
+        return await getPokemons();
+        
+    }
+    
     try {
         const response = await fetch(url);
 
-        if (response.status != 200) {
-            throw new Error('Gagal fetching data');
-        }
+        if (response.status != 200) throw new Error('Gagal fetching data');
         const data = await response.json()
         const tempResult = data.pokemon
+        
         pokemonDetails.splice(0, pokemonDetails.length)
         const maxConcurrentRequests = 5;
         let promises = [];
 
         for (const data in tempResult) {
-            promises.push(getPokemon(tempResult[data].pokemon.name).then((pokemon) => {
-                pokemonDetails.push(pokemon);
+            promises.push(fetchPokemon(tempResult[data].pokemon.name).then((pokemon) => {
+                for(let i= 0; i < pokemon.types.length; i++) {
+                    if(pokemon.types[i].type.name === curentElement.value) pokemonDetails.push(pokemon);
+                }
             }));
             if (promises.length === maxConcurrentRequests) {
                 await Promise.all(promises);
-                promises = []; // Reset array untuk request berikutnya
+                promises = []; 
             }
         }
-        if (promises.length > 0) {
-            await Promise.all(promises);
-        }
-    } catch (error) {
+        if (promises.length > 0) await Promise.all(promises);
 
+    } catch (error) {
+        console.error(error.message);
     }
 }
 
 const searchPokemons = async () => {
     searchPokemon.value = true
-    let getResultPokemon = await getPokemon(search.value)
+    let getResultPokemon = await fetchPokemon(search.value)
     if (getResultPokemon !== null) {
         resultPokemon.value = [getResultPokemon]
     }
@@ -219,13 +222,10 @@ watch(() => search.value, async () => {
         searchPokemon.value = false
         resultPokemon.value = []
     }
-
 })
 
 // mounted
-onMounted(() => {
-    getPokemons()
-})
+onMounted(() => getPokemons())
 
 
 </script>
@@ -307,7 +307,7 @@ onMounted(() => {
                 </div>
             </div>
         </section>
-        <div v-show="filteredPokemon.length < 100"
+        <div v-show="filteredPokemon.length < pokemonDetails.length"
             class=" absolute bottom-0 left-0 flex justify-center items-center right-0 bg-gradient-to-t from-gray-900 h-52 z-40 ">
             <button @click="getPokemons"
                 class="paginate outline-none border-2 border-cyan-300 text-cyan-300 py-3 px-6 rounded-full ">
@@ -316,5 +316,3 @@ onMounted(() => {
         </div>
     </div>
 </template>
-
-<style></style>
